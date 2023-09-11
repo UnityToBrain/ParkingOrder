@@ -1,4 +1,5 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 using PathCreation;
      // Moves along a path at constant speed.
@@ -10,7 +11,7 @@ using PathCreation;
         public float speed = 5;
         float distanceTravelled;
         private Camera _camera;
-        public bool moveCar,reverse;
+        public bool moveCar,reverse,lockTouch;
 
         private void Awake()
         {
@@ -35,7 +36,7 @@ using PathCreation;
 
         private void SelectCar()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !lockTouch)
             {
                 Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
@@ -45,7 +46,7 @@ using PathCreation;
                     {
                         if (hit.collider.gameObject == gameObject)
                         {
-                            moveCar = true;
+                            moveCar = lockTouch = true;
                             GameManager.gameManagerInstance.numberOfMoves--;
                         }
                     }
@@ -66,21 +67,24 @@ using PathCreation;
                 
                 transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
-
+                
+                
                 if (distance >= pathCreator.path.length && !reverse) // means reached to end of the road
                 {
-                    moveCar = false;
+                   lockTouch = moveCar = false;
                     reverse = true;
-
+                    transform.GetChild(0).DOLocalRotate(new Vector3(5f, 0f, 0f), 0.4f).SetLoops(2, LoopType.Yoyo).SetEase(Ease.InOutSine);
+                    GameManager.gameManagerInstance.countTracks--;
                     GameManager.gameManagerInstance.Victory();
                     GameManager.gameManagerInstance.Lose();
                 }
                 
                 if (distance <= 0f && reverse) // means the car will back to its initial pos
                 {
-                    moveCar = false;
+                    lockTouch = moveCar = false;
                     reverse = false;
                     
+                    GameManager.gameManagerInstance.countTracks++;
                     GameManager.gameManagerInstance.Victory();
                     GameManager.gameManagerInstance.Lose();
                 }

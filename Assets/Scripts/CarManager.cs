@@ -7,6 +7,9 @@ using UnityEngine;
 [ExecuteInEditMode] 
 public class CarManager : PathFollower
 {
+
+    private Rigidbody _rigidbody;
+    private Collider _collider;
     protected override void Start()
     {
         base.Start();
@@ -28,6 +31,9 @@ public class CarManager : PathFollower
         gameObject.tag = "Car";
         endOfPathInstruction = EndOfPathInstruction.Stop;
 
+        _rigidbody = GetComponent<Rigidbody>();
+        _collider = GetComponent<Collider>();
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -37,6 +43,9 @@ public class CarManager : PathFollower
             moveCar = false;
             GameManager.gameManagerInstance.losebool = true;
             GameManager.gameManagerInstance.Lose();
+
+            _rigidbody.isKinematic = _collider.isTrigger = false;
+            other.GetComponent<Rigidbody>().AddForceAtPosition(other.transform.position * 100f, other.transform.position);
         }
     }
 }
